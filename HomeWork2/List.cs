@@ -1,162 +1,122 @@
-﻿using System;
-using System.Linq;
-using System.Text;
+﻿using HomeWork2;
+using System;
+using System.Collections.Generic;
 
-class List<T>
+namespace LinkedLists
 {
-    T[] array;
-    /// <summary>
-    /// Контруктор
-    /// </summary>
-    public List()
+
+    public class DoublyLinkedList : LinkedList
     {
-        array = new T[0];
-    }
-    /// <summary>
-    /// Контруктор
-    /// </summary>
-    /// <param name="count">Количество элементов.</param>
-    public List(int count)
-    {
-        array = new T[count];
-    }
-    /// <summary>
-    /// Поместить новый элемент в конец списка.
-    /// </summary>
-    /// <param name="value">Новый элемент</param>
-    public void PushBack(T value)
-    {
-        Array.Resize(ref array, array.Length + 1);
-        array[array.Length - 1] = value;
-    }
-    /// <summary>
-    /// Поменстить новый элемент в начало списка.
-    /// </summary>
-    /// <param name="value">Новый элемент.</param>
-    public void PushFront(T value)
-    {
-        Array.Resize(ref array, array.Length + 1);
-        for (int i = array.Length - 1; i >= 1; i--)
-            array[i] = array[i - 1];
-        array[0] = value;
-    }
-    /// <summary>
-    /// Получить последний элемент в списке.
-    /// </summary>
-    /// <returns>Возвращает последний элемент</returns>
-    public T PopBack()
-    {
-        T value = array[array.Length - 1];
-        Array.Resize(ref array, array.Length - 1);
-        return value;
-    }
-    /// <summary>
-    /// Получить первый элемент списка.
-    /// </summary>
-    /// <returns>Возвращает первый элемент списка.</returns>
-    public T PopFront()
-    {
-        T value = array[0];
-        for (int i = 0; i < array.Length - 1; i++)
-            array[i] = array[i + 1];
-        Array.Resize(ref array, array.Length - 1);
-        return value;
-    }
-    /// <summary>
-    /// Количество элементов в списке.
-    /// </summary>
-    public int Count
-    {
-        get
+       
+        private readonly Node head = new Node();
+        private readonly Node tail = new Node();
+
+        public DoublyLinkedList()
         {
-            return array.Length;
+            head.NextNode = tail;
+            tail.PrevNode = head;
         }
-    }
-    /// <summary>
-    /// Очистить списокю
-    /// </summary>
-    public void Clear()
-    {
-        array = new T[0];
-    }
-    /// <summary>
-    /// Является ли список пустым.
-    /// </summary>
-    public bool IsEmpty
-    {
-        get
+
+        public void AddNode(int value)
         {
-            return array.Length == 0;
+            tail.PrevNode = new()
+            {
+                Value = value,
+                PrevNode = tail.PrevNode
+            };
         }
-    }
-    /// <summary>
-    /// Отсортировать список.
-    /// </summary>
-    public void Sort()
-    {
-        Array.Sort(array);
-    }
-    /// <summary>
-    /// Удалить элемент из списка.
-    /// </summary>
-    /// <param name="index">Номер элемента.</param>
-    public void Erase(uint index)
-    {
-        if (index >= array.Length)
-            throw new Exception("Индекс вне границ массива");
-        for (uint i = index; i < array.Length - 1; i++)
-            array[i] = array[i + 1];
-        Array.Resize(ref array, array.Length - 1);
-    }
-    /// <summary>
-    /// Элемент списка.
-    /// </summary>
-    /// <param name="index">Индекс элемента</param>
-    /// <returns>Возвращает элемент списка</returns>
-    public T this[int index]
-    {
-        get
+
+        public void AddNodeAfter(Node node, int value)
         {
-            return array[index];
+            Node current = head.NextNode;
+            while (current != tail && current != node)
+            {
+                current = current.NextNode;
+            }
+            if (current != tail)
+            {
+                current.NextNode = new()
+                {
+                    Value = value,
+                    PrevNode = current,
+                    NextNode = current.NextNode
+                };
+            }
+            else
+            {
+                throw new ArgumentException("Такого Узла нет в списке.", nameof(node));
+            }
         }
-        set
+
+        public Node FindNode(int searchValue)
         {
-            array[index] = value;
+            Node current = head.NextNode;
+            while (current != tail && current.Value != searchValue)
+            {
+                current = current.NextNode;
+            }
+            if (current != tail)
+            {
+                return current;
+            }
+            else
+            {
+                return null;
+            }
         }
+
+        public int GetCount()
+        {
+            int count = 0;
+            Node current = head.NextNode;
+            while (current != tail)
+            {
+                current = current.NextNode;
+                count++;
+            }
+            return count;
+        }
+
+        public void RemoveNode(int index)
+        {
+            int count = 0;
+            Node current = head.NextNode;
+            while (current != tail && count < index)
+            {
+                current = current.NextNode;
+                count++;
+            }
+            if (count == index)
+            {
+                RemoveNode(current);
+            }
+            else
+            {
+                throw new ArgumentException("Узла с таким индексом нет в списке.", nameof(index));
+            }
+        }
+
+        public void RemoveNode(Node node)
+        {
+            Node next = node.NextNode;
+            Node prev = node.PrevNode;
+
+            next.PrevNode = prev;
+            prev.NextNode = next;
+
+            // Можно не делать.  Но на всякий случай.
+            node.NextNode = null;
+            node.PrevNode = null;
+        }
+      
     }
+    
+     
 }
 
-class Program
+namespace HomeWork2
 {
-    static void Main(string[] args)
+    public class LinkedList
     {
-        List<int> list = new List<int>();
-        Random random = new Random();
-        for (int i = 0; i < 10; i++)
-        {
-            int v = random.Next() % 100;
-            Console.Write(v + " ");
-            list.PushBack(v);
-        }
-        Console.WriteLine();
-        list.PushFront(1);
-        list.PushFront(2);
-        for (int i = 0; i < list.Count; i++)
-            Console.Write(list[i] + " ");
-        Console.WriteLine();
-        list.Erase(3);
-        for (int i = 0; i < list.Count; i++)
-            Console.Write(list[i] + " ");
-        Console.WriteLine();
-        list.Sort();
-        for (int i = 0; i < list.Count; i++)
-            Console.Write(list[i] + " ");
-        Console.WriteLine();
-        while (!list.IsEmpty)
-        {
-            int v = list.PopBack();
-            Console.Write(v + " ");
-        }
-        Console.ReadKey(true);
     }
 }
